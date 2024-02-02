@@ -1,21 +1,27 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
-type Node struct {
-	next *Node
-	data string
+type MTypes interface {
+	int | int8 | int16 | float32 | float64 | ~string
 }
 
-type LinkedList struct {
-	head *Node
-	tail *Node
+type Node[T MTypes] struct {
+	next *Node[T]
+	data T
 }
 
-func (list *LinkedList) AddNode(value string) {
-	node := &Node{
+type LinkedList[T MTypes] struct {
+	head *Node[T]
+	tail *Node[T]
+}
+
+func (list *LinkedList[T]) AddNode(v T) {
+	node := &Node[T]{
 		next: nil,
-		data: value,
+		data: v,
 	}
 
 	if list.head == nil {
@@ -27,12 +33,12 @@ func (list *LinkedList) AddNode(value string) {
 	}
 }
 
-func (list *LinkedList) SearchNode(value string) []*Node {
-	var result []*Node
+func (list *LinkedList[T]) SearchNode(v T) []*Node[T] {
+	var result []*Node[T]
 	current := list.head
 
 	for current != nil {
-		if current.data == value {
+		if current.data == v {
 			result = append(result, current)
 		}
 		current = current.next
@@ -41,11 +47,21 @@ func (list *LinkedList) SearchNode(value string) []*Node {
 	return result
 }
 
-func (list *LinkedList) RemoveNode(value string) {
-	current := list.head
-	var prev *Node
+func (list *LinkedList[T]) AddLast(v T) {
+	newNode := &Node[T]{next: nil, data: v}
+	list.tail.next = newNode
+}
 
-	for current != nil && current.data != value {
+func (list *LinkedList[T]) AddFirst(v T) {
+	newNode := &Node[T]{next: list.head, data: v}
+	list.head = newNode
+}
+
+func (list *LinkedList[T]) RemoveNode(v T) {
+	current := list.head
+	var prev *Node[T]
+
+	for current != nil && current.data != v {
 		prev = current
 		current = current.next
 	}
@@ -61,25 +77,20 @@ func (list *LinkedList) RemoveNode(value string) {
 
 }
 
-func (list *LinkedList) AddLast(value string) {
-	newNode := &Node{next: nil, data: value}
-	list.tail.next = newNode
+func (list *LinkedList[T]) RemoveAllNode() {
+	list.head = nil
+	list.tail = nil
 }
 
-func (list *LinkedList) AddFirst(value string) {
-	newNode := &Node{next: list.head, data: value}
-	list.head = newNode
-}
-
-func (list *LinkedList) ReverseList() {
+func (list *LinkedList[T]) ReverseList() {
 
 	if list.IsEmpty() {
 		fmt.Println("The list is empty")
 	}
 
 	var current = list.head
-	var next *Node = nil
-	var prev *Node = nil
+	var next *Node[T] = nil
+	var prev *Node[T] = nil
 
 	for current != nil {
 		next = current.next
@@ -88,21 +99,31 @@ func (list *LinkedList) ReverseList() {
 		current = next
 	}
 
+	list.tail = list.head
 	list.head = prev
-
 }
 
-func (list *LinkedList) GetLastNode() *Node {
+func (list *LinkedList[T]) GetLastNode() *Node[T] {
 
 	if list.IsEmpty() {
 		fmt.Println("The list is empty")
 		return nil
 	}
 
-	return list.tail
+	return list.tail.next
 }
 
-func (list *LinkedList) Size() int {
+func (list *LinkedList[T]) GetFirstNode() *Node[T] {
+
+	if list.IsEmpty() {
+		fmt.Println("The list is empty")
+		return nil
+	}
+
+	return list.head
+}
+
+func (list *LinkedList[T]) Size() int {
 	current := list.head
 	count := 0
 	for current != nil {
@@ -113,30 +134,15 @@ func (list *LinkedList) Size() int {
 	return count
 }
 
-func (list *LinkedList) IsEmpty() bool {
+func (list *LinkedList[T]) IsEmpty() bool {
 	return list.head == nil
 }
 
-func (list *LinkedList) RemoveAllNode() {
-	list.head = nil
-	list.tail = nil
-}
-
-func (list *LinkedList) GetFirstNode() *Node {
-
-	if list.IsEmpty() {
-		fmt.Println("The list is empty")
-		return nil
-	}
-
-	return list.head
-}
-
-func (list *LinkedList) InsertAtPosition(position int, value string) {
+func (list *LinkedList[T]) InsertAtPosition(position int, v T) {
 	current := list.head
-	var prev *Node
+	var prev *Node[T]
 	count := 1
-	newNode := &Node{data: value}
+	newNode := &Node[T]{data: v}
 
 	if list.IsEmpty() {
 		newNode.next = nil
